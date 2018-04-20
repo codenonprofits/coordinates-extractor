@@ -21,12 +21,12 @@ setup(
     classifiers=CLASSIFIERS,
     install_requires=[
         'beautifulsoup4==4.6.0',
-        'cffi==1.10.0',
+        'cffi>=1.10.0',
         'chardet==3.0.4',
         'idna==2.6',
         'pycparser==2.18',
         'requests[security]',
-        'six==1.10.0',
+        'six>=1.10.0',
         'urllib3==1.22',
         'vobject==0.9.5'
     ]
