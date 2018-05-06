@@ -60,6 +60,8 @@ class CoordinatesExtractor(object):
             tag = script_tags[0]
             text = tag.get_text()
 
+            its_ok = False
+
             try:
                 items = text.split('"')
 
@@ -71,18 +73,36 @@ class CoordinatesExtractor(object):
                     self.lat = float(lat.replace('[', '').replace(']', ''))
                     long = '{long}'.format(long=string_with_coordinates_split[3])
                     self.long = float(long.replace('[', '').replace(']', ''))
+                    its_ok = True
                 except:
                     raise Exception
 
             except Exception:
-                items = text.split(',')
+                items = text.split('"')
+
+                string_with_coordinates = items[58]
+                string_with_coordinates = string_with_coordinates.replace('[', '').replace(']', '')
+                string_with_coordinates_split = string_with_coordinates.split(',')
 
                 try:
-                    lat = '{lat}'.format(lat=items[2])
+                    lat = '{lat}'.format(lat=string_with_coordinates_split[1])
                     self.lat = float(lat.replace('[', '').replace(']', ''))
-                    long = '{long}'.format(long=items[1])
+                    long = '{long}'.format(long=string_with_coordinates_split[2])
                     self.long = float(long.replace('[', '').replace(']', ''))
+                    its_ok = True
                 except:
                     pass
+
+            finally:
+                if its_ok == False:
+                    items = text.split(',')
+
+                    try:
+                        lat = '{lat}'.format(lat=items[2])
+                        self.lat = float(lat.replace('[', '').replace(']', ''))
+                        long = '{long}'.format(long=items[1])
+                        self.long = float(long.replace('[', '').replace(']', ''))
+                    except:
+                        pass
         
         return self.lat, self.long
