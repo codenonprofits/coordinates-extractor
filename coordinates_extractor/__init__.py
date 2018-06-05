@@ -11,6 +11,7 @@ class CoordinatesExtractor(object):
 
     def __init__(self, text=None, file_path=None, *args, **kwargs):
         assert text or file_path, 'text or file_path are required'
+        self.google_maps_urls_start = ('https://goo.gl', 'https://maps.google', 'https://www.google',)
         self.text = text
         self.lat = None
         self.long = None
@@ -38,17 +39,19 @@ class CoordinatesExtractor(object):
 
     def text_check(self):
         match = re.findall(self.regex, self.text)
-        return True if match and 'maps' in match[0] else False
+        url_match = [url for url in match if url.startswith(self.google_maps_urls_start) and 'maps' in url]
+        return True if url_match and 'maps' in url_match[0] else False
 
     def get_match(self):
         match = re.findall(self.regex, self.text)
+        url_match = [url for url in match if url.startswith(self.google_maps_urls_start) and 'maps' in url]
 
-        if not match:
+        if not url_match:
             raise Exception('No URL found.')
-        elif 'maps' not in match[0]:
+        elif 'maps' not in url_match[0]:
             raise Exception('Google Maps URL not found. Try again.')
         else:
-            return match[0]
+            return url_match[0]
 
     def get_coordinates(self):
         response = requests.get(self.get_match(), timeout=10)
