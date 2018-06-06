@@ -11,7 +11,7 @@ class CoordinatesExtractor(object):
 
     def __init__(self, text=None, file_path=None, *args, **kwargs):
         assert text or file_path, 'text or file_path are required'
-        self.google_maps_urls_start = ('https://goo.gl', 'https://maps.google', 'https://www.google',)
+        self.google_maps_urls_start = ('https://goo.gl', 'https://maps.google', 'https://www.google', 'https://maps.app',)
         self.text = text
         self.lat = None
         self.long = None
@@ -53,59 +53,70 @@ class CoordinatesExtractor(object):
         else:
             return url_match[0]
 
+    def _check_coordinates_on_url(self, url):
+        print(url)
+        # (\-?\d+(\.\d+)?)!4d-\s*(\-?\d+(\.\d+)?)\?
+        # (\-?\d+(\.\d+)?),\s*(\-?\d+(\.\d+)?)
+        return self.lat, self.long
+
     def get_coordinates(self):
         response = requests.get(self.get_match(), timeout=10)
 
-        soup = BeautifulSoup(response.content, 'html.parser')
-        script_tags = soup.head.find_all('script')
+        (lat, long) = self._check_coordinates_on_url(response.url)
 
-        if script_tags:
-            tag = script_tags[0]
-            text = tag.get_text()
+        if lat and long:
+            return lat, long
+        else:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            script_tags = soup.head.find_all('script')
 
-            its_ok = False
+            if script_tags:
+                tag = script_tags[0]
+                text = tag.get_text()
 
-            try:
-                items = text.split('"')
-
-                string_with_coordinates = items[62]
-                string_with_coordinates_split = string_with_coordinates.split(',')
-
-                try:
-                    lat = '{lat}'.format(lat=string_with_coordinates_split[4])
-                    self.lat = float(lat.replace('[', '').replace(']', ''))
-                    long = '{long}'.format(long=string_with_coordinates_split[3])
-                    self.long = float(long.replace('[', '').replace(']', ''))
-                    its_ok = True
-                except:
-                    raise Exception
-
-            except Exception:
-                items = text.split('"')
-
-                string_with_coordinates = items[58]
-                string_with_coordinates = string_with_coordinates.replace('[', '').replace(']', '')
-                string_with_coordinates_split = string_with_coordinates.split(',')
+                its_ok = False
 
                 try:
-                    lat = '{lat}'.format(lat=string_with_coordinates_split[1])
-                    self.lat = float(lat.replace('[', '').replace(']', ''))
-                    long = '{long}'.format(long=string_with_coordinates_split[2])
-                    self.long = float(long.replace('[', '').replace(']', ''))
-                    its_ok = True
-                except:
-                    pass
+                    items = text.split('"')
 
-            finally:
-                if its_ok == False:
-                    items = text.split(',')
+                    string_with_coordinates = items[62]
+                    string_with_coordinates_split = string_with_coordinates.split(',')
 
                     try:
-                        lat = '{lat}'.format(lat=items[2])
+                        lat = '{lat}'.format(lat=string_with_coordinates_split[4])
                         self.lat = float(lat.replace('[', '').replace(']', ''))
-                        long = '{long}'.format(long=items[1])
+                        long = '{long}'.format(long=string_with_coordinates_split[3])
                         self.long = float(long.replace('[', '').replace(']', ''))
+                        its_ok = True
+                    except:
+                        raise Exception
+
+                except Exception:
+                    items = text.split('"')
+
+                    string_with_coordinates = items[58]
+                    string_with_coordinates = string_with_coordinates.replace('[', '').replace(']', '')
+                    string_with_coordinates_split = string_with_coordinates.split(',')
+
+                    try:
+                        lat = '{lat}'.format(lat=string_with_coordinates_split[1])
+                        self.lat = float(lat.replace('[', '').replace(']', ''))
+                        long = '{long}'.format(long=string_with_coordinates_split[2])
+                        self.long = float(long.replace('[', '').replace(']', ''))
+                        its_ok = True
                     except:
                         pass
+
+                finally:
+                    if its_ok == False:
+                        items = text.split(',')
+
+                        try:
+                            lat = '{lat}'.format(lat=items[2])
+                            self.lat = float(lat.replace('[', '').replace(']', ''))
+                            long = '{long}'.format(long=items[1])
+                            self.long = float(long.replace('[', '').replace(']', ''))
+                        except:
+                            pass
         
         return self.lat, self.long
