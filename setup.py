@@ -9,13 +9,13 @@ CLASSIFIERS = [
 
 setup(
     name='coordinates-extractor',
-    version='0.0.7',
+    version='0.1.0',
     author='CodeNonprofits - GreatNonprofits',
     author_email='support@greatnonprofits.org',
     packages=['coordinates_extractor'],
     url='https://github.com/codenonprofits/coordinates-extractor',
     license='BSD licence, see LICENCE.txt',
-    description='Library consultation phone carriers around the world.',
+    description='Library to extract coordinates from Google Maps URL and Apple Maps Sharing Location.',
     download_url="https://github.com/codenonprofits/coordinates-extractor/archive/master.zip",
     keywords=['coordinates', 'extractor', 'google maps', 'maps', 'python'],
     classifiers=CLASSIFIERS,

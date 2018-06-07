@@ -54,10 +54,18 @@ class CoordinatesExtractor(object):
             return url_match[0]
 
     def _check_coordinates_on_url(self, url):
-        print(url)
-        # (\-?\d+(\.\d+)?)!4d-\s*(\-?\d+(\.\d+)?)\?
-        # (\-?\d+(\.\d+)?),\s*(\-?\d+(\.\d+)?)
-        return self.lat, self.long
+        url_regex = r'(\-?\d+(\.\d+)?)(!4d|,)-\s*(\-?\d+(\.\d+)?)'
+        match = re.findall(url_regex, url)
+
+        try:
+            (lat, lat_end, separator, long, lng_end) = match[-1] if match else (None, None, None, None, None)
+            lat = float(lat) if lat else None
+            long = float(long) if long else None
+        except Exception as e:
+            lat, long = None, None
+            print('>> Error: %s' % e.args)
+
+        return lat, long
 
     def get_coordinates(self):
         response = requests.get(self.get_match(), timeout=10)
@@ -65,7 +73,8 @@ class CoordinatesExtractor(object):
         (lat, long) = self._check_coordinates_on_url(response.url)
 
         if lat and long:
-            return lat, long
+            self.lat = lat
+            self.long = long
         else:
             soup = BeautifulSoup(response.content, 'html.parser')
             script_tags = soup.head.find_all('script')
