@@ -27,7 +27,7 @@ setup(
         'pycparser==2.18',
         'requests[security]',
         'six>=1.10.0',
-        'urllib3==1.22',
+        'urllib3==1.24.2',
         'vobject==0.9.5'
     ]
 )
